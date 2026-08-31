@@ -1,4 +1,14 @@
 
+---
+title: proust-rag
+emoji: 📚
+colorFrom: pink
+colorTo: blue
+sdk: docker
+app_port: 8000
+pinned: false
+---
+
 # proust-rag
 
 Stack: FastAPI + ChromaDB
