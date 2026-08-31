@@ -85,4 +85,4 @@ Thumbs.db
 *.log
 temp/
 
-chroma_db/
+# chroma_db/
