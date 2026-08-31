@@ -15,8 +15,6 @@ RUN pip install --no-cache-dir \
 
 COPY . .
 
-# Expose port and default command to run FastAPI with uvicorn
 EXPOSE 8000
 
-# Default command runs uvicorn on the module `main:app`
-CMD uvicorn main:app --host 0.0.0.0 --port $PORT
+CMD uvicorn main:app --host 0.0.0.0 --port 8000
