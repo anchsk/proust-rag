@@ -58,3 +58,21 @@ def send_prompt(prompt):
         ],
     )
     return message.content
+
+
+def generate(prompt):
+    if not prompt:
+            return ''
+
+    with client.messages.stream(
+            model=models['haiku'],
+            max_tokens=1000,
+            system=system_instructions,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],) as stream:
+        for text in stream.text_stream:
+            yield text
