@@ -22,8 +22,6 @@ source .env/bin/activate
 pip install -r requirements.txt
 ```
 
-Cmd + Shift + E to search for paths
-
 ```sh
 uvicorn main:app --reload
 ```
