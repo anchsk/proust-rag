@@ -28,3 +28,9 @@ Cmd + Shift + E to search for paths
 uvicorn main:app --reload
 ```
 
+
+# Observations after the first run
+
+Questions like "list all authors mentioned in this book" doesn't give a good result
+Vector similarity search fails
+
