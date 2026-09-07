@@ -27,8 +27,12 @@ uvicorn main:app --reload
 ```
 
 
-# Observations after the first run
+## Observations after the first run
 
 Questions like "list all authors mentioned in this book" doesn't give a good result
-Vector similarity search fails
+Vector similarity search fails (why?)
 
+Semantic search for questions like "what did Françoise cook" works ok. It returns top-5 closest matches. I can't do exhaustive retrieval with this setup. I need to add lemma extraction or more metadata (keywords) to each chunk of text.
+
+
+Ask about scenes, feelings, and passages — not exhaustive lists or exact word searches.

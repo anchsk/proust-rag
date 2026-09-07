@@ -61,7 +61,7 @@ def get_context(chapter_id, paragraph_id, sentence_index, window=1):
 
     return " ".join(before + current_texts + after)
 
-def search(query, n_results=10, window=1):
+def search_db(query, n_results=10, window=1):
     results = collection.query(query_texts=[query], n_results=n_results)
     output = []
     for doc, meta, dist in zip(results["documents"][0], results["metadatas"][0], results["distances"][0]):
