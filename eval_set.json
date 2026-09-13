@@ -100,5 +100,12 @@
     "expected_chunk_ids": ["ch3_p54_s0_c0"],
     "type": "semantic",
     "notes": "Control test for the abstract-vs-concrete finding (see q03), isolated from cross-lingual translation entirely — this is a French query against French source text, no translation involved. Originally this line of investigation (via the Russian equivalent) was misattributed to a name/reference mismatch (Odette vs Mme Swann), but that was disconfirmed in q03. This query re-tests the same abstract 'adult Odette' framing in French to check whether the failure is about abstractness specifically, independent of language. Expecting to fail if the abstract-query hypothesis holds; a pass would suggest language/translation was a contributing factor after all."
+  },
+  {
+    "id": "q14",
+    "query": "What does the narrator say about the painter Vermeer?",
+    "expected_chunk_ids": [],
+    "type": "negative",
+    "notes": "Deliberate negative control: Vermeer does not appear in chapters 1-3 (Swann's Way) at all. Correct behavior is an empty or irrelevant chunk_id_list. This tests two things at once: (1) the eval harness's empty-expected_chunk_ids edge case, and (2) whether the retrieval system 'helpfully' returns unrelated chunks anyway rather than correctly finding nothing — a common real RAG failure mode worth catching, distinct from ranking/recall on in-scope queries."
   }
 ]
