@@ -68,7 +68,7 @@ env/
 *.pkl
 *.joblib
 *.model
-data/
+# data/
 models/
 embeddings/
 
