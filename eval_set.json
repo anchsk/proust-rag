@@ -1,0 +1,104 @@
+[
+  {
+    "id": "q01",
+    "query": "How does he describe the church in Balbec?",
+    "expected_chunk_ids": ["ch3_p2_s3_c0"],
+    "type": "semantic",
+    "notes": ""
+  },
+  {
+    "id": "q02",
+    "query": "Odette et Swann s'embrassent",
+    "expected_chunk_ids": ["ch2_p180_s1_c0"],
+    "type": "lexical",
+    "notes": "Known hard case: catleya euphemism — text never says 'embrassent' directly. Regression test for whether merge/lemma layer improves this."
+  },
+  {
+    "id": "q03",
+    "query": "какую одежду носила Одетт",
+    "expected_chunk_ids": ["ch_2_p170_s1_c0", "ch2_p134_s3_c0", "ch2_p32_s1_c1"],
+    "type": "cross-lingual",
+    "notes": "Russian query against French source text."
+  },
+  {
+    "id": "q04",
+    "query": "passeggiata che loro fanno a Combray lungo il fiume",
+    "expected_chunk_ids": ["ch1_p348_s0_c0"],
+    "type": "cross-lingual",
+    "notes": "Italian query against French source text."
+  },
+  {
+    "id": "q05",
+    "query": "how does he describe the sensation of eating madeleines",
+    "expected_chunk_ids": ["ch1_p45_s5_c0"],
+    "type": "semantic",
+    "notes": "Known hard case: chunk-vs-context-window distinction noted previously — revisit."
+  },
+  {
+    "id": "q06",
+    "query": "How does the narrator compare his hotel room in Balbec to the bedrooms of his childhood in Combray?",
+    "expected_chunk_ids": ["ch3_p0_s0_c0"],
+    "type": "semantic",
+    "notes": ""
+  },
+  {
+    "id": "q07",
+    "query": "where did Swann buy gingerbread and why",
+    "expected_chunk_ids": ["ch3_p18_s4_c0"],
+    "type": "semantic",
+    "notes": "Companion case to q08 — same target chunk, near-opposite phrasing. Compare ranks directly."
+  },
+  {
+    "id": "q08",
+    "query": "pain d'épices Swann",
+    "expected_chunk_ids": ["ch3_p18_s4_c0"],
+    "type": "lexical",
+    "notes": "CORRECTED from earlier 'no match' note. Confirmed present at rank 9 (distance 0.462) in semantic-only search at k=20; not in top-5. This is now the primary regression test for the ranking-cutoff finding: correct chunk exists but is under-ranked because the sentence embeds multiple sub-topics (merchant's stall, Swann's purchase, his digestion, Gilberte, two boys) as one blended vector. fallback=false — not a chunking artifact."
+  },
+  {
+    "id": "q09",
+    "query": "is there any mention of snow?",
+    "expected_chunk_ids": [
+      "ch3_p13_s12_c0",
+      "ch3_p13_s0_c0",
+      "ch3_p13_s1_c0",
+      "ch3_p14_s1_c1",
+      "ch3_p14_s2_c0"
+    ],
+    "type": "semantic",
+    "notes": "Multi-answer query — hit if ANY listed chunk appears in top-k, not all. Excluded ch2_p181_s2_c0 from this list (that's the 'printemps pur et glacé' line — spring, not snow; likely a retrieval/citation mix-up in the original answer, worth checking separately)."
+  },
+  {
+    "id": "q10",
+    "query": "find some passages about spring",
+    "expected_chunk_ids": [
+      "ch2_p181_s2_c0",
+      "ch3_p6_s7_c1",
+      "ch2_p308_s5_c0",
+      "ch3_p2_s4_c1"
+    ],
+    "type": "semantic",
+    "notes": "Multi-answer query."
+  },
+  {
+    "id": "q11",
+    "query": "what does the narrator feel about Françoise?",
+    "expected_chunk_ids": ["ch1_p318_s9_c0", "ch1_p319_s0_c1"],
+    "type": "semantic",
+    "notes": "Generation-layer caveat (not retrieval): original answer included a hallucinated quote ('Je ne sais pas m'exprimer' — not found in text) and mis-cited paragraph 319 instead of 318 for the first quote. Retrieval itself may still be correct; verify separately from generation quality."
+  },
+  {
+    "id": "q12",
+    "query": "who did the narrator fall in love with?",
+    "expected_chunk_ids": ["ch1_p302_s3_c0"],
+    "type": "semantic",
+    "notes": "Caution: this is confirmed as A valid chunk, not necessarily the complete valid set — Gilberte is referenced many times across the book. Treat as a minimum, not exhaustive, ground truth."
+  },
+  {
+    "id": "q13",
+    "query": "Comment l'auteur décrit-il Odette à l'âge adulte",
+    "expected_chunk_ids": ["ch3_p54_s0_c0"],
+    "type": "",
+    "notes": "Expecting to fail: name/reference mismatch. Odette vs Mme Swann in the text."
+  }
+]
