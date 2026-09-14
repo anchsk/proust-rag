@@ -164,6 +164,18 @@ def merge_results(arr1, arr2):
     return list(merged.values())
 
 
+def retrieve(query):
+    intent = classify_intent(query, freq_threshold=settings["freq_threshold"])
+    semantic_results = search_db(query, limit=settings["db_limit"])
+
+    lemma_results = []
+    if intent == "both":
+        lemma_results = lemma_search_with_context(
+            query, window=0, limit=settings["lemma_limit"])
+
+    return merge_results(lemma_results, semantic_results)
+
+
 def classify_intent(query_text, freq_threshold=settings["freq_threshold"]):
     lemmas = extract_lemmas(query_text)
     # print(f"DEBUG lemma_index size: {len(lemma_index)}")
