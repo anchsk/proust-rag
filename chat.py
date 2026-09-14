@@ -43,9 +43,6 @@ models = {
 }
 
 def generate(prompt, lang):
-    if not prompt:
-        return ''
-
     try:
         with client.messages.stream(
                 model=models['haiku'],
