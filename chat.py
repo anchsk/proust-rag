@@ -18,13 +18,14 @@ def system_instructions(lang):
             "Example: if the user asks in English, write your answer in English, but any quoted sentence "
             "stays in French, like: The narrator describes the garden's calm — « ... » (ch.1, par.246).\n\n"
             "Never ask the user for clarification about language — always answer directly, "
-            "in one complete response, in the language you determine the question is written in.\n\n")
+            "in one complete response, in the language you determine the question is written in.\n\n"
+            "If all provided documents have a high relevance_distance (e.g., above 0.4), treat this as insufficient context and say so, rather than guessing.")
 
 
 def prepare_prompt(user_query, retrieved_data):
     logging.debug(retrieved_data)
     formatted_docs = "\n\n".join(
-        [f"<document index='{i+1}' ch='{obj['meta']['chapter_id']}' par_id='{obj['meta']['paragraph_id']}'>\n{obj['context']}\n</document>" for i,
+        [f"<document index='{i+1}' ch='{obj['meta']['chapter_id']}' par_id='{obj['meta']['paragraph_id']}' relevance_distance='{obj.get('distance', 'N/A')}'>\n{obj['context']}\n</document>" for i,
             obj in enumerate(retrieved_data)]
     )
     prompt = f""" Here's the retrieved context to help answer the question:

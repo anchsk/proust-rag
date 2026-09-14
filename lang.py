@@ -1,18 +1,18 @@
 from langdetect import detect
 
-questions = [
-    "Come è descritto il giardino della nonna?",
-    "Что говорится о цветах в саду",
-    "How are the flowers described?",
-    "Comment décrit-il le jardin?",
-    "fleurs dans le jardin",
-    "цветы",
-    "fleurs",
-    "プルーストは庭の花について何と言っていますか？"
-]
+# questions = [
+#     "Come è descritto il giardino della nonna?",
+#     "Что говорится о цветах в саду",
+#     "How are the flowers described?",
+#     "Comment décrit-il le jardin?",
+#     "fleurs dans le jardin",
+#     "цветы",
+#     "fleurs",
+#     "プルーストは庭の花について何と言っていますか？"
+# ]
 
-for q in questions:
-    print(f"{q!r} {detect(q)}")
+# for q in questions:
+#     print(f"{q!r} {detect(q)}")
 
 def detect_language(text):
     if not text:
