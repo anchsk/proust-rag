@@ -40,11 +40,11 @@ def search(request: SearchRequest):
 @app.post("/chat")
 def chat(request: ChatRequest):
     results = retrieve(request.query)
+    if not results:
+        return {"message": "No relevant passages found."}
+
     prompt = prepare_prompt(request.query, results)
     lang_detected = detect_language(request.query)
-
-    if not prompt:
-        return {"message": "missing prompt"}
     answer = generate(prompt, lang_detected)
 
     return StreamingResponse(answer, media_type="text/event-stream")
