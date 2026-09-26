@@ -1,4 +1,6 @@
-from langdetect import detect
+from langdetect import detect, DetectorFactory
+
+DetectorFactory.seed = 0  # langdetect is otherwise nondeterministic on short/ambiguous text
 
 # questions = [
 #     "Come è descritto il giardino della nonna?",
@@ -27,3 +29,9 @@ def detect_language(text):
 # 'цветы' ru
 # 'fleurs' fr
 # 'プルーストは庭の花について何と言っていますか？' ja
+
+
+# madeleine -> ['et', 'et', 'et', 'et', 'de', 'et', 'et', 'et']   # Estonian / German (?!)
+# Balbec    -> ['de', 'de', 'de', 'de', 'de', 'de', 'de', 'de']   # German, every time
+# Combray   -> ['es', 'es', 'es', 'es', 'es', 'es', 'es', 'es']   # Spanish, every time
+# fleurs    -> ['fr', 'fr', 'fr', 'fr', 'fr', 'fr', 'fr', 'fr']   # correct
