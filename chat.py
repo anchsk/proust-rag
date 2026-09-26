@@ -28,12 +28,12 @@ def prepare_prompt(user_query, retrieved_data):
         [f"<document index='{i+1}' ch='{obj['meta']['chapter_id']}' par_id='{obj['meta']['paragraph_id']}' relevance_distance='{obj.get('distance', 'N/A')}'>\n{obj['context']}\n</document>" for i,
             obj in enumerate(retrieved_data)]
     )
-    prompt = f""" Here's the retrieved context to help answer the question:
-    <documents>
-    {formatted_docs}
-    </documents>
-    
-    User Question: {user_query}"""
+    prompt = f"""Here's the retrieved context to help answer the question:
+<documents>
+{formatted_docs}
+</documents>
+
+User Question: {user_query}"""
     return prompt
 
 
@@ -57,5 +57,5 @@ def generate(prompt, lang):
             for text in stream.text_stream:
                 yield text
     except anthropic.APIError as e:
-        logging.error(f"Clause API error: {e}")
+        logging.error(f"Claude API error: {e}")
         yield "\n\n[Sorry, something went wrong generating this response. Please try again.]"
