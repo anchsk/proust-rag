@@ -135,8 +135,6 @@ def search_db(query_text, limit, window=1):
             meta["chapter_id"], meta["paragraph_id"], meta["sentence_index"], window)
         output.append({"match": doc, "context": context,
                       "distance": dist, "meta": meta})
-       # print(f"({dist:.3f})\nMatch: {doc}\nContext: {context}\n")
-
     return output
 
 
