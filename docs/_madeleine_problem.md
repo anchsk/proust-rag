@@ -108,3 +108,25 @@ After discovering this limitation, there were two things to consider. First, pur
 This can be achieved with hybrid search. Keyword queries should work alongside semantic ones.
 
 Roughly the plan is: index for keyword/exact search too, implement intent classification (route to keyword, semantic, or both)/
+
+```py
+# arr1 = lemma_search_with_context('madeleine')
+# arr2 = search_db('madeleine', n_results=5)
+
+# print([x["meta"]["chunk_id"] for x in merge_results(arr1,arr2)])
+
+# ch1_p50_s0_c0
+# ch1_p45_s3_c0
+# ch1_p119_s1_c0
+# ch1_p49_s1_c0
+# ch1_p49_s2_c0
+# ch1_p45_s2_c0
+# ch3_p52_s1_c0
+# ch1_p55_s6_c0
+# ch1_p345_s1_c0
+# ch1_p45_s22_c0
+# ch2_p68_s15_c0
+# ch1_p275_s6_c0
+# ch2_p212_s1_c0
+# ['ch1_p50_s0_c0', 'ch1_p45_s3_c0', 'ch1_p119_s1_c0', 'ch1_p49_s1_c0', 'ch1_p49_s2_c0', 'ch1_p45_s2_c0', 'ch3_p52_s1_c0', 'ch1_p55_s6_c0', 'ch1_p345_s1_c0', 'ch1_p45_s22_c0', 'ch2_p68_s15_c0', 'ch1_p275_s6_c0', 'ch2_p212_s1_c0']
+```
