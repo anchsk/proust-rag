@@ -8,7 +8,11 @@ from search import classify_intent
     ("Mme Swann", "semantic"),
     ("Swann", "semantic"),
     ("pain d'épices Swann", "both"),
-    ("what does the narrator feel about Françoise?", "semantic")
+    ("what does the narrator feel about Françoise?", "semantic"),
+    ("how does the narrator feel about his mother", "semantic")
 ])
 def test_classify_intent(query, expected):
     assert classify_intent(query) == expected
+    
+    
+    

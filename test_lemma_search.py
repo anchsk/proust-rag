@@ -1,5 +1,10 @@
+import pytest
 from search import lemma_search
 
-query = "pain d'épices Swann"
 
-lemma_search(query, limit=50)
+@pytest.mark.parametrize("query, expected", [
+    ("pain d'épices Swann", "ch3_p18_s4_c0")
+])
+
+def test_lemma_search(query, expected):
+    assert lemma_search(query, limit=50)[0] == expected
