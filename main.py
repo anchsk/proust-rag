@@ -1,18 +1,17 @@
+from typing import Annotated
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from search import retrieve, search_db, settings
 from chat import prepare_prompt, generate
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, StringConstraints
 from lang import detect_language
 
-
-class SearchRequest(BaseModel):
-    query: str
+QueryStr = Annotated[str, StringConstraints(min_length=1, strip_whitespace=True)]
 
 
-class ChatRequest(BaseModel):
-    query: str
+class QueryRequest(BaseModel):
+    query: QueryStr
 
 
 app = FastAPI()
@@ -32,13 +31,13 @@ async def root():
 
 # http://127.0.0.1:8000/docs
 @app.post("/search")
-def search(request: SearchRequest):
-    results = search_db(request.query, limit=settings["db_limit"])
+def search(request: QueryRequest):
+    results = search_db(request.query, limit=settings.db_limit)
     return results
 
 
 @app.post("/chat")
-def chat(request: ChatRequest):
+def chat(request: QueryRequest):
     results = retrieve(request.query)
     if not results:
         return {"message": "No relevant passages found."}
