@@ -40,7 +40,7 @@ def hit_at_k(found_ids, expected_ids):
 def run_pipeline(query):
     results = retrieve(query)
     chunk_id_list = [r["meta"]["chunk_id"] for r in results]
-    print((r["meta"]["chunk_id"], r["meta"]["distance"]) for r in results)
+    print([(r["meta"]["chunk_id"], r.get("distance", "N/A")) for r in results])
     return chunk_id_list
 
 

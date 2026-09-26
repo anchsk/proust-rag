@@ -107,5 +107,12 @@
     "expected_chunk_ids": [],
     "type": "negative",
     "notes": "Deliberate negative control: Vermeer does not appear in chapters 1-3 (Swann's Way) at all. Correct behavior is an empty or irrelevant chunk_id_list. This tests two things at once: (1) the eval harness's empty-expected_chunk_ids edge case, and (2) whether the retrieval system 'helpfully' returns unrelated chunks anyway rather than correctly finding nothing — a common real RAG failure mode worth catching, distinct from ranking/recall on in-scope queries."
+  },
+  {
+    "id": "q15",
+    "query": "cosa cucinava Françoise?",
+    "expected_chunk_ids": ["ch1_p261_s0_c0"],
+    "type": "cross-lingual",
+    "notes": "Italian query against French source text. Referenced in docs/eval_and_bugs.md finding 4a (distance 0.257 — contrasted there with the French/English Françoise query, which misses despite a similar distance range). Also locked in as a regression test in test_search.py."
   }
 ]
