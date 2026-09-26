@@ -137,7 +137,7 @@ A bug in `lemma_search` caused it to discard a valid, correct match when a
 query combined a rare term with a common one (e.g. "pain d'épices Swann" —
 "Swann" appears in hundreds of chunks, drowning out the rare, correct match
 on "épices"). Root cause, evidence, and fix are documented in
-[bug_lemma_search_truncation_upd.md](bug_lemma_search_truncation_upd.md).
+[bug_lemma_search_truncation.md](bug_lemma_search_truncation.md).
 
 **2. Separately from the bug above: long, multi-topic sentences rank lower
 in semantic search, even when correctly chunked.**
