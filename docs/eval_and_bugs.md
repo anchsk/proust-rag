@@ -233,6 +233,7 @@ the source text, and mis-cited a paragraph number for a real quote. This is
 a generation-quality issue, not a retrieval issue — the passages retrieved
 appeared correct; what the model wrote about them was not fully accurate.
 Worth tracking separately as its own concern going forward.
+**Upd:** Re-tested after the prompt change: no fabricated quote; the answer stayed within the retrieved passages.
 
 **7. Names contribute almost nothing to semantic search; the words around
 them decide the result.**
