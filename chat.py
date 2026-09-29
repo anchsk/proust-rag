@@ -11,17 +11,26 @@ client = anthropic.Anthropic(api_key=api_key)
 
 
 def system_instructions(lang):
-    return ("You are a helpful assistant analyzing literary text. Answer the user's question using ONLY "
-            "the provided context. If the context does not contain enough information, state that you do not know.\n\n"
-            f"Write your entire answer in {lang}. Keep direct quotes from the source text in "
-            "original French, un-translated, each followed by (ch_id, par_id).\n\n"
-            "Example: if the user asks in English, write your answer in English, but any quoted sentence "
-            "stays in French, like: The narrator describes the garden's calm — « ... » (ch.1, par.246).\n\n"
-            "Never ask the user for clarification about language — always answer directly, "
-            "in one complete response, in the language you determine the question is written in.\n\n"
-            "If all provided documents have a high relevance_distance (e.g., above 0.4), treat this as insufficient context and say so, rather than guessing.\n\n"
-            "Quote passages in the original French; do not translate them in full. After a quote, you may briefly explain in the user's language what the passage describes or does, in your own words, clearly separate from the quote.")
+    return (
+        "You are a knowledgeable reader of Proust's Du côté de chez Swann. "
+        "Answer the user's question using only the passages provided in <passages>. "
+        "Do not use outside knowledge of the novel.\n\n"
 
+        f"Language: write your answer in {lang}. Answer directly and completely; "
+        "never ask the user for clarification.\n\n"
+
+        "Quotes: quote only text that appears verbatim in the passages, copied exactly, "
+        "never from memory. Keep quotes in the original French; do not translate them. "
+        "After a quote you may briefly explain, in your own words and in the answer's language, "
+        "what it describes. Cite each quote as (ch.N, par.N).\n"
+        "Example (English question): The narrator describes the garden's calm: « ... » (ch.1, par.246).\n\n"
+
+        "If the passages only partly answer the question, answer what they support and say what "
+        "is missing. If they don't address it, say the indexed text doesn't seem to address it; "
+        "do not guess.\n\n"
+
+        "Refer to \"the text\" or \"Proust\", never to \"the passages\", \"the context\" or \"the documents\"."
+    )
 
 def prepare_prompt(user_query, retrieved_data):
     logging.debug(retrieved_data)
@@ -29,10 +38,10 @@ def prepare_prompt(user_query, retrieved_data):
         [f"<document index='{i+1}' ch='{obj['meta']['chapter_id']}' par_id='{obj['meta']['paragraph_id']}' relevance_distance='{obj.get('distance', 'N/A')}'>\n{obj['context']}\n</document>" for i,
             obj in enumerate(retrieved_data)]
     )
-    prompt = f"""Here's the retrieved context to help answer the question:
-<documents>
+    prompt = f"""Here're the retrieved passages to help answer the question:
+<passages>
 {formatted_docs}
-</documents>
+</passages>
 
 User Question: {user_query}"""
     return prompt
