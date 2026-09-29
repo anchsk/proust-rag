@@ -19,7 +19,8 @@ def system_instructions(lang):
             "stays in French, like: The narrator describes the garden's calm — « ... » (ch.1, par.246).\n\n"
             "Never ask the user for clarification about language — always answer directly, "
             "in one complete response, in the language you determine the question is written in.\n\n"
-            "If all provided documents have a high relevance_distance (e.g., above 0.4), treat this as insufficient context and say so, rather than guessing.")
+            "If all provided documents have a high relevance_distance (e.g., above 0.4), treat this as insufficient context and say so, rather than guessing.\n\n"
+            "Quote passages in the original French; do not translate them in full. After a quote, you may briefly explain in the user's language what the passage describes or does, in your own words, clearly separate from the quote.")
 
 
 def prepare_prompt(user_query, retrieved_data):
@@ -46,7 +47,7 @@ def generate(prompt, lang):
     try:
         with client.messages.stream(
                 model=models['haiku'],
-                max_tokens=1000,
+                max_tokens=2000,
                 system=system_instructions(lang),
                 messages=[
                     {
