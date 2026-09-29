@@ -1,4 +1,6 @@
+import os
 from typing import Annotated
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from search import retrieve, search_db, settings
@@ -6,6 +8,8 @@ from chat import prepare_prompt, generate
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, StringConstraints
 from lang import detect_language
+
+load_dotenv(".env.prod")
 
 QueryStr = Annotated[str, StringConstraints(min_length=1, strip_whitespace=True)]
 
@@ -16,9 +20,11 @@ class QueryRequest(BaseModel):
 
 app = FastAPI()
 
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
