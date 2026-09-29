@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 
 from search import retrieve
+
 json_path = Path(__file__).with_name("eval_set.json")
 
 with json_path.open("r", encoding="utf-8") as f:

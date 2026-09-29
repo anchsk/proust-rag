@@ -1,4 +1,3 @@
-
 ---
 title: proust-rag
 emoji: 📚
@@ -11,7 +10,7 @@ pinned: false
 
 # proust-rag
 
-A small web service for asking questions about Proust's *Swann's Way* (the first three chapters) and getting answers grounded in the actual text — not the model's general knowledge of the novel.
+A small web service for asking questions about Proust's *Du côté de chez Swann* (*Swann's Way*, the first volume of *À la recherche du temps perdu*, in the original French) and getting answers grounded in the actual text — not the model's general knowledge of the novel.
 
 You send it a question, it finds the passages most likely to answer it, and asks Claude to write an answer using only those passages.
 
@@ -49,6 +48,8 @@ In practice: a specific, less-common word or name tends to get more precise resu
 ## Why it works this way
 
 The two-part search (semantic + exact-term) wasn't the original design — it came out of a real problem found while testing. Searching for "madeleine" itself — the single most famous word in this book — returned nothing relevant. The passage was indexed correctly, but a single word like that doesn't carry enough meaning on its own for a similarity-based search to recognize it as significant; the model compares overall meaning, not exact wording, so a short, specific query can end up "far" in meaning-space from the very passage that contains it word-for-word. That's a known, general limitation of this kind of search, not a bug in this project specifically. The fix was to add a second, exact-word-matching layer alongside the meaning-based one, so specific terms can still be found reliably even when semantic search misses them. The full investigation, with the actual numbers, is in [docs/madeleine_problem.md](docs/madeleine_problem.md).
+
+A later case shows the same thing from the other side. Proust writes the painter's name as "Ver Meer". Asking for "ver meer" through `/search` (semantic only) returns unrelated passages, while a query with the same spelling through `/chat` finds the Ver Meer passages, because the exact-term search matches the words directly. See finding 7 in [docs/eval_and_bugs.md](docs/eval_and_bugs.md).
 
 ## Answer generation
 
@@ -106,6 +107,7 @@ Retrieval quality has been checked against a small, hand-built set of test quest
 A few smaller, specific limitations that don't have their own write-up yet, but are worth knowing:
 
 - **Multi-word names aren't treated as one term.** "Mme Swann" is broken into two separate words for exact-term search, not kept together — since "Swann" alone is too common to count as a specific term, this falls back to semantic search even for a name that, as a whole phrase, is fairly specific.
+- **Names in historical spelling aren't matched from their modern form.** Proust writes "Ver Meer", so a question about "Vermeer" misses those passages: the name adds almost nothing to semantic search, and there is no exact-term match for "vermeer". Asking with Proust's spelling works. See finding 7 in [eval_and_bugs.md](docs/eval_and_bugs.md).
 - **Broad, category-style questions aren't supported** (e.g. "list every flower mentioned in the book"). Exact-term search only looks up one specific word at a time — it has no idea that "rose," "lilac," and "violet" all belong to the same category.
 - **Questions about counting or relationships across the book aren't supported** (e.g. "how many times does the narrator visit his grandmother"). That would need the system to track people, places, and events across the whole text, which is well beyond what either search method does today.
 

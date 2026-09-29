@@ -11,7 +11,7 @@ searching the source CSVs directly, or by querying the lemma index and the
 semantic search separately, to find passages that would make good, clearly
 answerable test cases.
 
-The set is still small (15 queries at time of writing) and is expected to
+The set is still small (16 queries at time of writing) and is expected to
 grow.
 
 ## What is being tested
@@ -52,6 +52,9 @@ reading one blended score:
   checks whether it can match meaning across languages.
 - **negative** — the query asks about something that does not appear in
   the text at all. The correct result is no relevant passages returned.
+  Since retrieval has no distance threshold, it always returns 5 chunks, so
+  a negative query always shows as FAIL at the retrieval level; the real
+  check is whether the generated answer says the text doesn't cover it.
 
 One overlap worth naming honestly: a query can belong to more than one type
 at once. An English-language query is technically cross-lingual too, since
@@ -96,17 +99,24 @@ type             n   recall        mrr   coverage
 ---------------------------------------------------
 cross-lingual    3    0.667      0.667      0.667
 lexical          2    0.500      0.500      0.500
-semantic         9    0.556  0.18-0.39      0.489
+semantic        10    0.500      0.275      0.440
 ---------------------------------------------------
-overall         14    0.571  0.33-0.39      0.529
+overall         15    0.533      0.383      0.493
 ```
 
-Negative case (q14 — a query about Vermeer, who does not appear in this
-part of the text): **FAIL**. See
+These numbers include q14 (Vermeer) as a semantic query for the first time;
+it was previously the negative case (see finding 7). It's a known miss, so
+part of the drop in semantic recall compared with earlier runs comes from
+this relabeling, not from the system getting worse. The MRR values are a
+single run; see the note below on why MRR varies between runs.
+
+Negative case (q16 — a query about Picasso, who does not appear in the
+text): **FAIL** at the retrieval level, as expected (see Query types); the
+generated answer correctly said the text doesn't mention him. See
 [finding_negative_case_no_threshold.md](finding_negative_case_no_threshold.md)
 for details.
 
-**MRR is given as a range, not a single number, and that's deliberate.**
+**Why MRR varies between runs.**
 Re-running the harness multiple times with no code changes produces
 different semantic/overall MRR each time (observed: 0.183, 0.332, 0.341,
 0.393 across four consecutive runs) while recall and coverage stay exactly
@@ -126,7 +136,7 @@ that range, not a fixed ground truth.
 **Caveat on the numbers above**: lexical still has only 2 queries — at that
 size a single query changing outcome swings the group average by 50%.
 Cross-lingual grew from 2 to 3 with the addition of q15 (see finding 4a
-below), still small but slightly less fragile than before. Semantic, at 9
+below), still small but slightly less fragile than before. Semantic, at 10
 queries, remains the most informative, though still small in absolute
 terms.
 
@@ -224,9 +234,36 @@ a generation-quality issue, not a retrieval issue — the passages retrieved
 appeared correct; what the model wrote about them was not fully accurate.
 Worth tracking separately as its own concern going forward.
 
+**7. Names contribute almost nothing to semantic search; the words around
+them decide the result.**
+q14 (*"What does the narrator say about the painter Vermeer?"*) was
+originally the negative case, until it turned out Vermeer does appear, in
+ch.2, spelled the way Proust writes it: "Ver Meer" (e.g. `ch2_p533_s2_c0`).
+Checking why the system missed it:
+
+- Semantic search alone (`/search`) with the bare name "vermeer" returns
+  short, unrelated exclamations ("Verdurin!", "Brava!"). The name gives the
+  embedding almost nothing to work with, and very short clauses like these
+  seem to sit close to many weak queries.
+- With the full q14 question, semantic search returns sentences containing
+  *peintre*. A Ver Meer chunk appears at rank 10 (k=20), but only because
+  it also contains "peintre": it competes with every other sentence about
+  a painter and falls outside the top 5.
+- Lemma search can't rescue it: the text has "Ver" + "Meer", and there is
+  no lemma "vermeer".
+- With Proust's spelling it works: "ver meer de Delft" through `/chat`
+  finds the Ver Meer passages via lemma search, while "ver meer" through
+  `/search` (semantic only) returns unrelated results ("bigre!", at
+  distance 0.29).
+
+The new negative case, q16 (Picasso), shows the same effect: all five
+returned sentences contain *peintre*. Possible fixes, not built: an alias
+map for historical spellings (Vermeer → Ver Meer), or also indexing the
+lowercase joined form of consecutive proper nouns ("vermeer").
+
 ## Known limitations and next steps
 
-- **Dataset size.** 14-15 queries is enough to find real, specific bugs
+- **Dataset size.** 16 queries is enough to find real, specific bugs
   (as it did) but too small for the aggregate numbers to be a stable
   measure of overall system quality. Expanding toward 25-30 queries,
   especially for lexical (currently 2) and cross-lingual (now 3, still thin),
@@ -238,9 +275,10 @@ Worth tracking separately as its own concern going forward.
   need to happen before MRR trends over time can be trusted; recall and
   coverage aren't affected and are safe to compare across runs today.
 - **Negative-case coverage.** Only one negative query exists so far
-  (Vermeer). Whether the 0.29-0.36 distance range found for it is typical,
-  or specific to that one example, is unknown until more negative cases are
-  tested.
+  (q16, Picasso; the original one, Vermeer, turned out not to be negative,
+  see finding 7). Whether irrelevant results typically score in the same
+  range as relevant ones (0.29-0.36 in the Vermeer run) is unknown until
+  more negative cases are tested.
 - **Open findings not yet resolved**: items 2 and 3 above are documented
   observations, not fixed bugs — they need further investigation before any
   fix is attempted. Item 4 has a confirmed root cause (see above) but no
