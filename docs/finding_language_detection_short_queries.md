@@ -7,9 +7,15 @@
 
 Longer, less ambiguous phrase-style queries (6+ words) detected correctly and consistently in testing. `langdetect` is a statistical n-gram detector; short text just doesn't give it enough signal, and it guesses confidently instead of flagging uncertainty.
 
+
 ## Fix applied
 
 Pinned `DetectorFactory.seed = 0`. This makes a given input always return the same result — it does not fix accuracy, but a _consistently_ wrong detection is testable and debuggable, where a _randomly_ wrong one wasn't.
+
+## Example: "Ver Meer de Delft"
+The query "ver meer de Delft" (Proust's spelling of Vermeer's name) was detected as Dutch by `langdetect`, and the answer came back in Dutch. The detection is understandable: *ver*, *meer* and *de* are all Dutch words, and Delft is a Dutch city. The string itself is ambiguous, and `langdetect` has no way to know it comes from a French novel.
+
+Possible fixes (not built): let Claude decide the answer language instead of `langdetect`, or default to English when the query is short or detection confidence is low.
 
 ## Open
 
