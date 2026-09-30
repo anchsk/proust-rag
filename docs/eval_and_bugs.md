@@ -11,7 +11,7 @@ searching the source CSVs directly, or by querying the lemma index and the
 semantic search separately, to find passages that would make good, clearly
 answerable test cases.
 
-The set is still small (16 queries at time of writing) and is expected to
+The set is still small (17 queries at time of writing) and is expected to
 grow.
 
 ## What is being tested
@@ -45,8 +45,10 @@ reading one blended score:
   rather than by matching exact words.
 - **lexical** — the query is expected to succeed because it contains a
   specific, identifiable word or name that exists in the lemma index (an
-  index of word roots, used for exact-term lookups the semantic search can
-  miss).
+  index of dictionary forms of words, used for exact-term lookups the
+  semantic search can miss). Exact-term search only covers nouns and proper
+  names (spaCy NOUN/PROPN), so a query whose only rare word is a verb, like
+  q02's *s'embrassent*, never uses it.
 - **cross-lingual** — the query is in a different language than the
   source text (French). The embedding model used is multilingual, so this
   checks whether it can match meaning across languages.
@@ -95,14 +97,15 @@ the others ("how well does it rank the right answer").
 ## Results
 
 ```shell
-type             n   recall        mrr   coverage
----------------------------------------------------
-cross-lingual    3    0.667      0.667      0.667
-lexical          2    0.500      0.500      0.500
-semantic        10    0.500      0.275      0.440
----------------------------------------------------
-overall         15    0.533      0.383      0.493
+type             n   recall      mrr   coverage
+-----------------------------------------------
+cross-lingual    3    0.667    0.667      0.667
+lexical          2    1.000    1.000      1.000
+semantic        11    0.455    0.189      0.400
+-----------------------------------------------
+overall         16    0.562    0.380      0.525
 ```
+Since the previous run: q02 was relabeled from lexical to semantic (it never reached the lemma path, see below), and q17 ("faire catleya") was added as a genuine lexical case targeting the same scene. Lexical is 2/2, but still only two queries.
 
 These numbers include q14 (Vermeer) as a semantic query for the first time;
 it was previously the negative case (see finding 7). It's a known miss, so

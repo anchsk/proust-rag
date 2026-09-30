@@ -10,8 +10,8 @@
     "id": "q02",
     "query": "Odette et Swann s'embrassent",
     "expected_chunk_ids": ["ch2_p180_s1_c0"],
-    "type": "lexical",
-    "notes": "Known hard case: catleya euphemism — text never says 'embrassent' directly. Regression test for whether merge/lemma layer improves this."
+    "type": "semantic",
+    "notes": "Tests paraphrase/euphemism: the target passage never uses embrasser ('faire catleya'). Formerly tagged lexical, but the matched terms (Odette, Swann) are too common to trigger lemma search."
   },
   {
     "id": "q03",
@@ -106,7 +106,8 @@
     "query": "What does the narrator say about the painter Vermeer?",
     "expected_chunk_ids": ["ch2_p533_s2_c0", "ch2_p33_s2_c0", "ch2_p33_s7_0"],
     "type": "semantic",
-    "notes": "Formerly a negative control, but Vermeer does appear, spelled 'Ver Meer' (ch.2). Semantic search ranks a Ver Meer chunk at 10 (k=20), only because it contains 'peintre': the name adds nothing to the embedding, so it competes with every other 'painter' sentence. Lemma search can't help (no lemma 'vermeer'). Querying 'Ver Meer' works via lemma search in /chat. Possible fix: alias map for historical name spellings."  },
+    "notes": "Formerly a negative control, but Vermeer does appear, spelled 'Ver Meer' (ch.2). Semantic search ranks a Ver Meer chunk at 10 (k=20), only because it contains 'peintre': the name adds nothing to the embedding, so it competes with every other 'painter' sentence. Lemma search can't help (no lemma 'vermeer'). Querying 'Ver Meer' works via lemma search in /chat. Possible fix: alias map for historical name spellings."
+  },
   {
     "id": "q15",
     "query": "cosa cucinava Françoise?",
@@ -114,11 +115,18 @@
     "type": "cross-lingual",
     "notes": "Italian query against French source text. Referenced in docs/eval_and_bugs.md finding 4a (distance 0.257 — contrasted there with the French/English Françoise query, which misses despite a similar distance range). Also locked in as a regression test in test_search.py."
   },
-    {
+  {
     "id": "q16",
     "query": "What does the narrator say about the painter Picasso?",
     "expected_chunk_ids": [],
     "type": "negative",
     "notes": "Negative control (replaces q14): Picasso does not appear in the text. Correct behavior: no relevant chunks retrieved, and the answer says so. Also tests the harness with an empty expected_chunk_ids."
+  },
+  {
+    "id": "q17",
+    "query": "faire catleya",
+    "expected_chunk_ids": ["ch2_p134_s9_c0","ch2_p170_s0_c0","ch2_p170_s1_c0","ch2_p180_s0_c0","ch2_p180_s1_c0","ch2_p180_s4_c0","ch2_p180_s5_c0","ch2_p180_s7_c0","ch2_p183_s3_c0","ch2_p317_s0_c0","ch2_p317_s1_c0","ch2_p319_s0_c0","ch2_p566_s19_c0","ch2_p567_s0_c0"],
+    "type": "lexical",
+    "notes": "Companion to q02: the same scene reached by the exact term instead of a paraphrase. 'catleya' (Proust's spelling) occurs in 16 chunks, so it is rare enough to trigger lemma search. Multi-answer: single-lemma matches tie, and tie order is random (see MRR note), so any catleya chunk counts."
   }
 ]

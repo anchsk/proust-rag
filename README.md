@@ -110,5 +110,6 @@ A few smaller, specific limitations that don't have their own write-up yet, but 
 - **Names in historical spelling aren't matched from their modern form.** Proust writes "Ver Meer", so a question about "Vermeer" misses those passages: the name adds almost nothing to semantic search, and there is no exact-term match for "vermeer". Asking with Proust's spelling works. See finding 7 in [eval_and_bugs.md](docs/eval_and_bugs.md).
 - **Broad, category-style questions aren't supported** (e.g. "list every flower mentioned in the book"). Exact-term search only looks up one specific word at a time — it has no idea that "rose," "lilac," and "violet" all belong to the same category.
 - **Questions about counting or relationships across the book aren't supported** (e.g. "how many times does the narrator visit his grandmother"). That would need the system to track people, places, and events across the whole text, which is well beyond what either search method does today.
+- **Exact-term search covers nouns and names only.** Verbs and adjectives rely on semantic search.
 
 This is a project I'm actively learning from and improving — if something looks off, it's very possibly a known limitation already listed above, or on its way to being one.
