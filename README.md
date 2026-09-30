@@ -118,3 +118,11 @@ A few smaller, specific limitations that don't have their own write-up yet, but 
 - **Exact-term search covers nouns and names only.** Verbs and adjectives rely on semantic search.
 
 This is a project I'm actively learning from and improving — if something looks off, it's very possibly a known limitation already listed above, or on its way to being one.
+
+## Future work
+
+- **Translate queries to French before exact-term search.** Lemmas are extracted with a French model, so for questions in other languages only names survive ("Balbec" does; "church" doesn't). Translating first would let exact-term search work in any language, and the same step could also decide the answer language more reliably than `langdetect` on short queries.
+- **A fallback for frequently mentioned characters.** Exact-term search only runs for rare words, so abstract questions about common characters (Françoise, Odette, Swann) rely on semantic search alone, which is where it is weakest. This needs a design decision on what should trigger a fallback other than word rarity. See finding 4 in [eval_and_bugs.md](docs/eval_and_bugs.md).
+- **Historical spellings of names.** Proust writes "Ver Meer", so a question about "Vermeer" misses those passages. Options: a small alias map, or also indexing the joined form of consecutive proper names. See finding 7.
+- **A reliable "nothing relevant" signal.** Retrieval always returns results, and distance scores don't separate relevant from irrelevant ones, so a fixed cutoff isn't safe. Alternatives to explore: checking that generated quotes actually appear in the text, or a calibrated threshold tested on many more negative queries. See [finding_negative_case_no_threshold.md](docs/finding_negative_case_no_threshold.md).
+- **A larger, more stable evaluation.** Grow the eval set beyond 16 queries (only 2 lexical and 3 cross-lingual so far), report hit@5 alongside the current hit rate so query types are comparable, and make tie-breaking deterministic so MRR stops varying between runs.
