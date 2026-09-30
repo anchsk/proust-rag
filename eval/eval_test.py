@@ -41,7 +41,7 @@ def hit_at_k(found_ids, expected_ids):
 def run_pipeline(query):
     results = retrieve(query)
     chunk_id_list = [r["meta"]["chunk_id"] for r in results]
-    print([(r["meta"]["chunk_id"], r.get("distance", "N/A")) for r in results])
+    # print([(r["meta"]["chunk_id"], r.get("distance", "N/A")) for r in results])
     return chunk_id_list
 
 
@@ -51,6 +51,7 @@ for case in regular_cases:
     chunk_id_list = run_pipeline(query)
 
     rank = reciprocal_rank(chunk_id_list, case["expected_chunk_ids"])
+    print(query, rank)
     # mrr_scores.append(reciprocal_rank)
     mrr_by_type[case["type"]].append(rank)
 

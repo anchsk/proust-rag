@@ -93,6 +93,8 @@ For `"pain d'épices Swann"` (lemmas: `pain`, `épice`, `swann`; df=7, 1, 691 re
 
 `ch3_p18_s4_c0` (matching all three lemmas: `1 + 1/7 + 1/691 ≈ 1.144`) is now correctly ranked first — no longer at risk of being dropped by an unordered-set truncation. Chunks matching only `"pain"` (df=7) form the next tier at `1/7 ≈ 0.143`; chunks matching only `"swann"` (df=691) fall to the bottom at `1/691 ≈ 0.0014`, as intended.
 
+Later change: only chunks matching at least one rare lemma (below the frequency threshold) enter the list; common lemmas still add their 1/df to those chunks' scores, so they affect the order but never add chunks. This removed the filler (e.g. the 42 swann-only chunks above) while keeping common words as tie-breakers: q06 improved from rank 3 to 2.
+
 ### Known limitation of this fix
 
 For single-lemma queries (e.g. a bare `"Swann"`), every matching chunk ties at the same score — there's no second signal to break the tie, since all matches share the same (and only) lemma's `1/df` weight. This fix improves ranking specifically for multi-lemma queries where lemma rarity varies; it does not add new ordering information for single-lemma queries.

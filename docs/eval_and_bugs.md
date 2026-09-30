@@ -101,9 +101,9 @@ type             n   recall      mrr   coverage
 -----------------------------------------------
 cross-lingual    3    0.667    0.667      0.667
 lexical          2    1.000    1.000      1.000
-semantic        11    0.455    0.167      0.400
+semantic        11    0.455    0.164      0.400
 -----------------------------------------------
-overall         16    0.562    0.365      0.525
+overall         16    0.562    0.363      0.525
 ```
 Since the previous run: q02 was relabeled from lexical to semantic (it never reached the lemma path, see below), and q17 ("faire catleya") was added as a genuine lexical case targeting the same scene. Lexical is 2/2, but still only two queries.
 

@@ -90,6 +90,11 @@ uvicorn main:app --reload
 
 The API will be available at `http://127.0.0.1:8000`, with interactive docs at `http://127.0.0.1:8000/docs`.
 
+To run tests:
+```sh
+python -m pytest -v
+```
+
 ## Deployment
 
 The project runs as a Docker container on Hugging Face Spaces. The Dockerfile installs all dependencies — including the French language model used for the exact-term search — and starts the service with `uvicorn` on port 8000, which is what Hugging Face expects.

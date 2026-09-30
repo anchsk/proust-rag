@@ -56,24 +56,33 @@ def load_chunk_metadata(path):
 def get_chunk_metadata():
     return load_chunk_metadata("data/proust_chunks_merged.csv")
 
+def is_specific(lemma, freq_threshold):
+    lemma_index = get_lemma_index()
+    return lemma in lemma_index and len(lemma_index[lemma]) <= freq_threshold
 
-def lemma_search(query_text, limit):
+
+
+def lemma_search(query_text, limit, freq_threshold=settings.freq_threshold):
     lemmas = extract_lemmas(query_text)
+    lemma_index = get_lemma_index()
 
-    count = collections.Counter()
+    candidates = set()             # who is allowed in: chunks with a rare word
+    count = collections.Counter()  # points: every word counts
 
     for lemma in lemmas:
-        lemma_list = get_lemma_index().get(lemma, [])
-        doc_freq = len(lemma_list)
+        lemma_list = lemma_index.get(lemma, [])
         lemma_ids = set(lemma_list)
+
+        if is_specific(lemma, freq_threshold):
+            candidates.update(lemma_ids)
+
+        doc_freq = len(lemma_list)
         for x in lemma_ids:
-            count[x] += 1/doc_freq  # weighted score
+            count[x] += 1 / doc_freq  # rare words give more points
 
-    # match a rare informative item
-    most_common = count.most_common()
-    chunk_ids = [x[0] for x in most_common]
-    return list(chunk_ids)[:limit]
-
+    # keep only candidates; common words only reorder them, never add chunks
+    chunk_ids = [chunk_id for chunk_id, _ in count.most_common() if chunk_id in candidates]
+    return chunk_ids[:limit]
 
 def _sorted_chunks(result):
     return sorted(
@@ -181,11 +190,7 @@ def retrieve(query):
 def classify_intent(query_text, freq_threshold=settings.freq_threshold):
     lemmas = extract_lemmas(query_text)
     
-    lemma_index = get_lemma_index()
-    specific_lemmas = [
-        l for l in lemmas
-        if l in lemma_index and len(lemma_index[l]) <= freq_threshold
-    ]
+    specific_lemmas = [lemma for lemma in lemmas if is_specific(lemma, freq_threshold)]
 
     if specific_lemmas:
         return "both"
