@@ -1,7 +1,7 @@
-# The Madeleine Problem (WIP)
+# The Madeleine Problem
 
-The scene of a personage eating a madeleine and remembering all things past is known even to those who haven't read Proust. When thinking about queries and passages to check the retrieval, I decided to search for the madeleine.
-I discovered that the query of type "tell me about the madeleines" returned the results that were very far from what I expected it to be.
+The scene of a character eating a madeleine and remembering all things past is known even to those who haven't read Proust. When thinking about queries and passages to check the retrieval, I decided to search for the madeleine.
+I discovered that a query like "tell me about the madeleines" returned results very far from what I expected.
 
 For example:
 
@@ -70,21 +70,23 @@ For example:
 ]
 ```
 
-None of these passages is good. The distances are high: the closest one is 0.559 and it returns an irrelevant chunk of text. Neither searching for "madeleine" provides a good result. Chroma is returning its least-bad option because it can't return "nothing relevant".
+None of these passages is relevant. Searching for the bare word "madeleine" didn't give good results either. Chroma returns its least-bad options because it has no way to return "nothing relevant" (see [finding_negative_case_no_threshold.md](finding_negative_case_no_threshold.md)).
+
+The distances here are high (0.56 and above), but later testing showed that distance alone isn't a reliable signal: irrelevant results can score as low as relevant ones, and the range shifts from query to query (see findings 4a and 5 in [eval_and_bugs.md](eval_and_bugs.md)).
 
 ## Figuring out why
 
-I've checked if the chunks I expected were indexed at all. In the csv with all the text prepared to be indexed, I've searched for "madeleine" and it was there.
-Quering ChromaDB for the exact passage id, returned the passage.
+First I checked whether the expected chunks were indexed at all. In the CSV with all the text prepared for indexing, I searched for "madeleine", and it was there.
+Querying ChromaDB for the exact passage ID returned the passage:
 
 ```py
 result = collection.get(ids=["ch1_p45_s2_c0"], include=["embeddings"])
 print(result["embeddings"])
 ```
 
-The embeddings is a real vector. So the data was there, it was just not appearing.
+The embedding is a real vector. So the data was there, but it wasn't being retrieved.
 
-Checking for the actual similarity between the specific chunk and the query:
+Then I checked the actual similarity between that chunk and the query:
 
 ```py
 madeleine_emb = collection.get(ids=["ch1_p45_s2_c0"], include=["embeddings"])["embeddings"][0]
@@ -95,38 +97,38 @@ cos_sim = np.dot(madeleine_emb, query_emb) / (np.linalg.norm(madeleine_emb) * np
 print(cos_sim)
 ```
 
-The result is 0.2007715439029371 and it is very low.
+The result is 0.2008: very low for a passage that contains the query word itself.
 
 ## The reason
 
-Multilingual MiniLM is doing pattern-matching on statistical co-occurence patterns. It does not reason about the text and it doesn't have a deep knowledge to recognize "madeleine" as significant.
-In this case, the query is short and doesn't sit close in vector space because the model is comparing the chunk meaning, not doing substring matching. This is a documented limitation of sentence-transformer models. For the model, the sentence's dominant semantic content overweighs the literal keyword match.
+The embedding model (multilingual MiniLM) represents a whole sentence as one vector, based on statistical patterns learned in training. It doesn't do substring matching, and it has no knowledge that "madeleine" is significant in this book. A one-word query and a long sentence that happens to contain that word don't end up close in vector space: the sentence's overall content outweighs the single shared word. This is a general limitation of dense embedding search, not a bug in this project.
 
-## The conclusion
+## The solution: hybrid search (implemented)
 
-After discovering this limitation, there were two things to consider. First, pure vector search can miss keyword matches. And another thing I had in mind it's to be able to make exhaustive queries of type "find all mentions of flowers".
-This can be achieved with hybrid search. Keyword queries should work alongside semantic ones.
+This showed that pure vector search can miss exact keyword matches, so I added a second, exact-term layer alongside the semantic one:
 
-Roughly the plan is: index for keyword/exact search too, implement intent classification (route to keyword, semantic, or both)/
+1. **A lemma index**, built in `proust-pipeline` with spaCy (`fr_core_news_lg`): for each noun and proper noun in the text, its dictionary form (lemma) maps to the chunks it appears in. "madeleines" and "madeleine" both map to `madeleine`.
+2. **Routing by rarity** (`classify_intent`): if a query contains a noun or name that appears in 50 chunks or fewer, lemma search runs in addition to semantic search. Very common words ("Swann", "Françoise") are skipped, since an exact match on them isn't informative.
+3. **Merging** (`merge_results`): results from both searches are combined into one list, without duplicates, before being sent to Claude.
+
+## Result
+
+The same query now returns the madeleine passages, including the one that semantic search alone missed (`ch1_p45_s2_c0`):
 
 ```py
-# arr1 = lemma_search_with_context('madeleine')
-# arr2 = search_db('madeleine', n_results=5)
-
-# print([x["meta"]["chunk_id"] for x in merge_results(arr1,arr2)])
-
-# ch1_p50_s0_c0
-# ch1_p45_s3_c0
-# ch1_p119_s1_c0
-# ch1_p49_s1_c0
-# ch1_p49_s2_c0
-# ch1_p45_s2_c0
-# ch3_p52_s1_c0
-# ch1_p55_s6_c0
-# ch1_p345_s1_c0
-# ch1_p45_s22_c0
-# ch2_p68_s15_c0
-# ch1_p275_s6_c0
-# ch2_p212_s1_c0
-# ['ch1_p50_s0_c0', 'ch1_p45_s3_c0', 'ch1_p119_s1_c0', 'ch1_p49_s1_c0', 'ch1_p49_s2_c0', 'ch1_p45_s2_c0', 'ch3_p52_s1_c0', 'ch1_p55_s6_c0', 'ch1_p345_s1_c0', 'ch1_p45_s22_c0', 'ch2_p68_s15_c0', 'ch1_p275_s6_c0', 'ch2_p212_s1_c0']
+arr1 = lemma_search_with_context('madeleine')
+arr2 = search_db('madeleine', n_results=5)
+print([x["meta"]["chunk_id"] for x in merge_results(arr1, arr2)])
 ```
+
+```
+['ch1_p50_s0_c0', 'ch1_p45_s3_c0', 'ch1_p119_s1_c0', 'ch1_p49_s1_c0', 'ch1_p49_s2_c0', 'ch1_p45_s2_c0', 'ch3_p52_s1_c0', 'ch1_p55_s6_c0', 'ch1_p345_s1_c0', 'ch1_p45_s22_c0', 'ch2_p68_s15_c0', 'ch1_p275_s6_c0', 'ch2_p212_s1_c0']
+```
+
+The madeleine scene is also part of the eval set (`q05` in `eval_set.json`).
+
+## Limits of the solution
+
+- Exact-term search finds every occurrence of a **specific word**, but not a **category**: "find all mentions of flowers" doesn't work, because the lemma index doesn't know that *rose*, *lilas* and *aubépine* are flowers.
+- It only covers nouns and proper names, so a query whose only specific word is a verb relies on semantic search alone.
+- Names in historical spelling are only found in that spelling: "Vermeer" misses Proust's "Ver Meer" (see finding 7 in [eval_and_bugs.md](eval_and_bugs.md)).
