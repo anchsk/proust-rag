@@ -32,13 +32,14 @@ def system_instructions(lang):
         "Refer to \"the text\" or \"Proust\", never to \"the passages\", \"the context\" or \"the documents\"."
     )
 
+
 def prepare_prompt(user_query, retrieved_data):
     logging.debug(retrieved_data)
     formatted_docs = "\n\n".join(
-        [f"<document index='{i+1}' ch='{obj['meta']['chapter_id']}' par_id='{obj['meta']['paragraph_id']}' relevance_distance='{obj.get('distance', 'N/A')}'>\n{obj['context']}\n</document>" for i,
+        [f"<excerpt index='{i+1}' ch='{obj['meta']['chapter_id']}' par_id='{obj['meta']['paragraph_id']}'>\n{obj['context']}\n</excerpt>" for i,
             obj in enumerate(retrieved_data)]
     )
-    prompt = f"""Here're the retrieved passages to help answer the question:
+    prompt = f"""
 <passages>
 {formatted_docs}
 </passages>
@@ -51,6 +52,7 @@ models = {
     'haiku': 'claude-haiku-4-5-20251001',  # costs less
     'sonnet': 'claude-sonnet-5'
 }
+
 
 def generate(prompt, lang):
     try:
