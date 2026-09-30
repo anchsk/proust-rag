@@ -2,7 +2,7 @@ import os
 from typing import Annotated
 from dotenv import load_dotenv
 from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
 from search import retrieve, search_db, settings
 from chat import prepare_prompt, generate
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,7 +18,20 @@ class QueryRequest(BaseModel):
     query: QueryStr
 
 
-app = FastAPI()
+description = """
+Question answering over Proust's *Du côté de chez Swann*, with hybrid (semantic + exact-term) retrieval and answers from Claude.
+Try `/search` to see raw retrieval, or `/chat` for a full answer.
+
+- Source code: [github.com/anchsk/proust-rag](https://github.com/anchsk/proust-rag)
+- Frontend: [proust-app.vercel.app](https://proust-app.vercel.app)
+- Evaluation and findings: [docs/](https://github.com/anchsk/proust-rag/tree/main/docs)
+"""
+
+app = FastAPI(
+    title="proust-rag",
+    description=description,
+    swagger_ui_parameters={"defaultModelsExpandDepth": -1},  # hide the Schemas block
+)
 
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
@@ -30,12 +43,11 @@ app.add_middleware(
 )
 
 
-@app.get("/")
+@app.get("/", include_in_schema=False)
 async def root():
-    return {"message": "Hello, world!"}
+    return RedirectResponse(url="/docs")
 
 
-# http://127.0.0.1:8000/docs
 @app.post("/search")
 def search(request: QueryRequest):
     results = search_db(request.query, limit=settings.db_limit)
