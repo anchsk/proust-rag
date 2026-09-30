@@ -20,7 +20,7 @@ What actually happened:
 ```
 q16: FAIL: returned ['ch2_p45_s10_c0', 'ch2_p156_s1_c0', 'ch2_p293_s1_c0', 'ch2_p341_s0_c0', 'ch1_p106_s1_c0']
 ```
-Distances: [0.37, 0.39, 0.40, 0.42, 0,42]
+Distances: [0.37, 0.39, 0.40, 0.42, 0.42]
 
 All five returned sentences contain the word *peintre* (for example, Mme Verdurin addressing the painter Biche, or a painter copying a stained-glass window in the Combray church). The name "Picasso" adds almost nothing to the query's embedding, so the word "painter" decides what comes back: sentences about painters in general. They look plausible, which is exactly what makes this failure mode risky.
 

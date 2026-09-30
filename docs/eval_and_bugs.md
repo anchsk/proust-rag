@@ -105,13 +105,7 @@ semantic        11    0.455    0.164      0.400
 -----------------------------------------------
 overall         16    0.562    0.363      0.525
 ```
-Since the previous run: q02 was relabeled from lexical to semantic (it never reached the lemma path, see below), and q17 ("faire catleya") was added as a genuine lexical case targeting the same scene. Lexical is 2/2, but still only two queries.
-
-These numbers include q14 (Vermeer) as a semantic query for the first time;
-it was previously the negative case (see finding 7). It's a known miss, so
-part of the drop in semantic recall compared with earlier runs comes from
-this relabeling, not from the system getting worse. The MRR values are a
-single run; see the note below on why MRR varies between runs.
+Changes to the query set over time: q14 (Vermeer) moved from negative to semantic after Vermeer turned out to appear as "Ver Meer" (finding 7); q02 moved from lexical to semantic, since it never reaches exact-term search; q17 ("faire catleya") was added as a genuine lexical case. Semantic includes several known misses, which is why its recall is lower than in early runs; this reflects relabeling, not a regression. MRR values are from a single run (see below).
 
 Negative case (q16 — a query about Picasso, who does not appear in the
 text): **FAIL** at the retrieval level, as expected (see Query types); the
@@ -139,7 +133,7 @@ that range, not a fixed ground truth.
 **Caveat on the numbers above**: lexical still has only 2 queries — at that
 size a single query changing outcome swings the group average by 50%.
 Cross-lingual grew from 2 to 3 with the addition of q15 (see finding 4a
-below), still small but slightly less fragile than before. Semantic, at 10
+below), still small but slightly less fragile than before. Semantic, at 11
 queries, remains the most informative, though still small in absolute
 terms.
 
@@ -227,15 +221,19 @@ unreliable.
 and distance scores don't clearly separate good matches from bad ones.**
 See [finding_negative_case_no_threshold.md](finding_negative_case_no_threshold.md).
 
-**6. Separate from retrieval: the language-generation step has produced at
-least one fabricated quote.**
+**6. Separate from retrieval: the language-generation step produced a
+fabricated quote (one observed case).**
 While checking a retrieval result for the Françoise query, one generated
 answer included a quote in quotation marks that does not appear anywhere in
 the source text, and mis-cited a paragraph number for a real quote. This is
 a generation-quality issue, not a retrieval issue — the passages retrieved
 appeared correct; what the model wrote about them was not fully accurate.
-Worth tracking separately as its own concern going forward.
-**Upd:** Re-tested after the prompt change: no fabricated quote; the answer stayed within the retrieved passages.
+
+Update: the system prompt now requires quotes to be copied verbatim from the
+retrieved text. In a single re-run of the same question after this change,
+no fabricated quote appeared and the answer stayed within the retrieved
+text. One clean run doesn't show the problem is gone; a systematic check
+(verifying every quoted string against the source) would be needed for that.
 
 **7. Names contribute almost nothing to semantic search; the words around
 them decide the result.**
@@ -266,7 +264,7 @@ lowercase joined form of consecutive proper nouns ("vermeer").
 
 ## Known limitations and next steps
 
-- **Dataset size.** 16 queries is enough to find real, specific bugs
+- **Dataset size.** 17 queries (16 scored) is enough to find real, specific bugs
   (as it did) but too small for the aggregate numbers to be a stable
   measure of overall system quality. Expanding toward 25-30 queries,
   especially for lexical (currently 2) and cross-lingual (now 3, still thin),

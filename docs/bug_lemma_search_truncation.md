@@ -1,7 +1,7 @@
 # Bug: lemma search silently drops valid matches on truncation
 
 ## Summary
-`lemma_search_with_context` returns an unordered `set` of matched chunk_ids and truncates it with `list(matched_ids)[:limit]`. Since Python sets have no meaningful order, this truncation can silently discard valid matches from rare/specific query lemmas in favor of matches from common ones — with no error, no warning, and no indication that anything was lost.
+`lemma_search_with_context` returned an unordered `set` of matched chunk_ids and truncated it with `matched_ids[:limit]`. Since Python sets have no meaningful order, this truncation can silently discard valid matches from rare/specific query lemmas in favor of matches from common ones — with no error, no warning, and no indication that anything was lost.
 
 ## How it was found
 Discovered via retrieval eval, not by chance: the query `"pain d'épices Swann"` consistently failed on the `/chat` endpoint, in a way that contradicted an earlier, related success — `"where did Swann buy gingerbread and why"` (a paraphrase of the same fact) succeeded and correctly cited chunk `ch3_p18_s4_c0`. Two phrasings of the same underlying fact behaving inconsistently was the signal that something structural — not just embedding/ranking noise — was wrong with the lexical path specifically.
@@ -54,10 +54,6 @@ Python sets are unordered — iteration order depends on hash values, not on ins
 
 This means: **any query combining a common lemma with a rare/specific one is at risk of silently losing the specific match**, purely as a function of set hash ordering — not embedding distance, not chunking, not query phrasing.
 
-## Why "Françoise" queries still worked
-
-For contrast: `"Françoise"` alone is both common *and* the entire query — no competing common lemma dilutes or reorders it out, so it survives the truncation and the bug wasn't visible there. This is why one query type worked and the other silently failed — it depends on which lemmas happen to co-occur, not general lexical-search health.
-
 ## Fix options considered
 
 1. **Minimal**: skip truncating the lemma-side union at all; let `merge_results` do the final ranking/limiting downstream.
@@ -68,15 +64,15 @@ For contrast: `"Françoise"` alone is both common *and* the entire query — no 
 
 Replaced the unordered `set` + arbitrary truncation with an IDF-style weighted score per chunk, computed in a single pass over the query's lemmas.
 
-**Reasoning**: the original bug happened because presence in a `set` carries no information about *how relevant* a match is — a chunk matching one common lemma (`"swann"`, df=691, df here counts occurrences in the lemma index, so 691 for swann, across 645 chunks) was indistinguishable from a chunk matching one rare, informative lemma (`"épice"`, df=1). The fix scores each lemma's contribution to a chunk by `1 / df` (its document frequency across the lemma index) — a match on a rare lemma contributes far more to a chunk's score than a match on a common one, and a chunk matching multiple query lemmas accumulates score from each. Sorting by this score before truncating means the correct/most-specific chunk is never at risk of being cut, regardless of how large the union of candidates is.
+**Reasoning**: the original bug happened because presence in a `set` carries no information about *how relevant* a match is — a chunk matching one common lemma (`"swann"`, df=691) was indistinguishable from a chunk matching one rare, informative lemma (`"épice"`, df=1). The fix scores each lemma's contribution to a chunk by `1 / df`, where df is the lemma's number of occurrences in the lemma index (691 for `swann`, across 645 chunks) — a match on a rare lemma contributes far more to a chunk's score than a match on a common one, and a chunk matching multiple query lemmas accumulates score from each. Sorting by this score before truncating means the correct/most-specific chunk is never at risk of being cut, regardless of how large the union of candidates is.
 
-**Per-lemma document frequency** is available directly from `len(lemma_index.get(lemma, []))` at the moment each lemma's matches are fetched — no separate pass is needed to compute it.
+**Per-lemma df** is available directly from `len(lemma_index.get(lemma, []))` at the moment each lemma's matches are fetched — no separate pass is needed to compute it.
 
 **Repeated-mention safeguard**: each lemma's match list is deduplicated to unique chunk_ids before scoring, so a chunk mentioning "Swann" four times still contributes only one `1/df` score for that lemma — not four. Without this, the fix would silently reintroduce the original failure mode (raw mention-count drowning out rarity).
 
 ### Verified output
 
-For `"pain d'épices Swann"` (lemmas: `pain`, `épice`, `swann`; df=7, 1, 691 respectively), scored and sorted:
+For `"pain d'épices Swann"` (lemmas: `pain`, `épice`, `swann`; df=7, 1, 691 respectively), scored and sorted (first 10 of 50 shown):
 
 ```
 [('ch3_p18_s4_c0', 1.1443043208600372),
@@ -93,11 +89,11 @@ For `"pain d'épices Swann"` (lemmas: `pain`, `épice`, `swann`; df=7, 1, 691 re
 
 `ch3_p18_s4_c0` (matching all three lemmas: `1 + 1/7 + 1/691 ≈ 1.144`) is now correctly ranked first — no longer at risk of being dropped by an unordered-set truncation. Chunks matching only `"pain"` (df=7) form the next tier at `1/7 ≈ 0.143`; chunks matching only `"swann"` (df=691) fall to the bottom at `1/691 ≈ 0.0014`, as intended.
 
-Later change: only chunks matching at least one rare lemma (below the frequency threshold) enter the list; common lemmas still add their 1/df to those chunks' scores, so they affect the order but never add chunks. This removed the filler (e.g. the 42 swann-only chunks above) while keeping common words as tie-breakers: q06 improved from rank 3 to 2.
+Later change: only chunks matching at least one rare lemma (at or below the frequency threshold) enter the list; common lemmas still add their score to those chunks, so they affect the order but never add chunks. This removed the chunks matching only common lemmas (the `swann` tier at the bottom of the output above, which filled the remaining slots of the 50-result list) while keeping common words as tie-breakers: q06 improved from rank 3 to 2.
 
 ### Known limitation of this fix
 
-For single-lemma queries (e.g. a bare `"Swann"`), every matching chunk ties at the same score — there's no second signal to break the tie, since all matches share the same (and only) lemma's `1/df` weight. This fix improves ranking specifically for multi-lemma queries where lemma rarity varies; it does not add new ordering information for single-lemma queries.
+For single-lemma queries (e.g. a bare `"madeleine"`), every matching chunk ties at the same score — there's no second signal to break the tie, since all matches share the same (and only) lemma's `1/df` weight. This fix improves ranking specifically for multi-lemma queries where lemma rarity varies; it does not add new ordering information for single-lemma queries.
 This tie is also why MRR varies between eval runs: tied chunks are ordered by hash-random set iteration (see the MRR note in [eval_and_bugs.md](eval_and_bugs.md), and q17).
 
 ### Verification
