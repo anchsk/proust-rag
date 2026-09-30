@@ -116,14 +116,17 @@ This showed that pure vector search can miss exact keyword matches, so I added a
 The same query now returns the madeleine passages, including the one that semantic search alone missed (`ch1_p45_s2_c0`):
 
 ```py
-arr1 = lemma_search_with_context('madeleine')
-arr2 = search_db('madeleine', n_results=5)
+arr1 = lemma_search_with_context('madeleine', limit=10)
+print('arr1', arr1)
+arr2 = search_db('madeleine', limit=5)
 print([x["meta"]["chunk_id"] for x in merge_results(arr1, arr2)])
 ```
 
 ```
-['ch1_p50_s0_c0', 'ch1_p45_s3_c0', 'ch1_p119_s1_c0', 'ch1_p49_s1_c0', 'ch1_p49_s2_c0', 'ch1_p45_s2_c0', 'ch3_p52_s1_c0', 'ch1_p55_s6_c0', 'ch1_p345_s1_c0', 'ch1_p45_s22_c0', 'ch2_p68_s15_c0', 'ch1_p275_s6_c0', 'ch2_p212_s1_c0']
+['ch1_p45_s2_c0', 'ch1_p49_s1_c0', 'ch1_p50_s0_c0', 'ch3_p52_s1_c0', 'ch1_p49_s2_c0', 'ch1_p55_s6_c0', 'ch1_p119_s1_c0', 'ch1_p45_s3_c0', 'ch1_p345_s1_c0', 'ch1_p45_s22_c0', 'ch2_p68_s15_c0', 'ch1_p275_s6_c0', 'ch2_p212_s1_c0']
 ```
+
+The first eight are lemma matches: every chunk containing *madeleine*. Since the query is a single lemma, they tie on score, and their order changes between runs (see the MRR note in [eval_and_bugs.md](eval_and_bugs.md)). Two of them aren't about the cake at all: "la Madeleine" (the Paris church and district, `ch3_p52_s1_c0`) and the actress Madeleine Brohan (`ch1_p119_s1_c0`). Exact-term search matches the word, not its meaning. The last five are the semantic results, which include the same irrelevant passages as before; the merge places the exact matches ahead of them rather than removing them.
 
 The madeleine scene is also part of the eval set (`q05` in `eval_set.json`).
 
@@ -132,3 +135,4 @@ The madeleine scene is also part of the eval set (`q05` in `eval_set.json`).
 - Exact-term search finds every occurrence of a **specific word**, but not a **category**: "find all mentions of flowers" doesn't work, because the lemma index doesn't know that *rose*, *lilas* and *aubépine* are flowers.
 - It only covers nouns and proper names, so a query whose only specific word is a verb relies on semantic search alone.
 - Names in historical spelling are only found in that spelling: "Vermeer" misses Proust's "Ver Meer" (see finding 7 in [eval_and_bugs.md](eval_and_bugs.md)).
+- It matches words, not meanings: a search for *madeleine* also returns the Paris church and an actress named Madeleine.
