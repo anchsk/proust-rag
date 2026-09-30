@@ -58,13 +58,11 @@ This means: **any query combining a common lemma with a rare/specific one is at 
 
 For contrast: `"Françoise"` alone is both common *and* the entire query — no competing common lemma dilutes or reorders it out, so it survives the truncation and the bug wasn't visible there. This is why one query type worked and the other silently failed — it depends on which lemmas happen to co-occur, not general lexical-search health.
 
-## Fix options (not yet implemented)
+## Fix options considered
 
 1. **Minimal**: skip truncating the lemma-side union at all; let `merge_results` do the final ranking/limiting downstream.
 2. **Better**: rank candidates before truncating — e.g. score each chunk_id by number of distinct query lemmas it matched (a chunk matching all 3 query lemmas is more relevant than one matching only `"swann"`), then take the top `limit` by that score.
 3. **Cheap partial fix**: prioritize rarer lemmas' matches before truncating (guarantee low-frequency lemma hits survive first, then fill remaining slots with common-lemma hits).
-
-Next step: implement and re-test against the eval set (`eval_set.json`, specifically `q08`) to confirm the fix.
 
 ## Fix (implemented)
 
@@ -98,7 +96,8 @@ For `"pain d'épices Swann"` (lemmas: `pain`, `épice`, `swann`; df=7, 1, 691 re
 ### Known limitation of this fix
 
 For single-lemma queries (e.g. a bare `"Swann"`), every matching chunk ties at the same score — there's no second signal to break the tie, since all matches share the same (and only) lemma's `1/df` weight. This fix improves ranking specifically for multi-lemma queries where lemma rarity varies; it does not add new ordering information for single-lemma queries.
+This tie is also why MRR varies between eval runs: tied chunks are ordered by hash-random set iteration (see the MRR note in [eval_and_bugs.md](eval_and_bugs.md), and q17).
 
-### Remaining verification
-
-Re-run the full eval set (`eval_set.json`) against this version — confirm `q08` now passes end-to-end via `/chat`, and check that ranking changes haven't regressed previously-working queries (e.g. `q11`, the Françoise case, which relied on the `"both"` intent path before this fix existed).
+### Verification
+- `q08` ("pain d'épices Swann") passes end-to-end, both in the eval harness and via `/chat`. Also covered by `test_lemma_search` in `test_lemma_search.py`.
+- Full eval re-run after the fix: `q11` (Françoise) still misses, for a reason documented separately: "Françoise" is too common to trigger lemma search at all (see finding 4 in [eval_and_bugs.md](eval_and_bugs.md)).
