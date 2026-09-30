@@ -185,8 +185,7 @@ Two queries about the narrator's feelings toward specific characters
 ("what does the narrator feel about Françoise," "who did the narrator fall
 in love with") failed to retrieve the correct passage. Checking
 `classify_intent`'s code confirmed why: it only enables the lemma-index
-fallback when a query contains a *rare* term (appearing in 50 or fewer
-chunks). Françoise is mentioned 171 times, so she is correctly excluded —
+fallback when a query contains a *rare* term (appearing 50 times or fewer in the text). Françoise is mentioned 171 times, so she is correctly excluded —
 `classify_intent` is working exactly as designed, not misbehaving.
 
 This means the lemma fallback — the system's only backup when semantic

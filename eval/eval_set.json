@@ -127,6 +127,6 @@
     "query": "faire catleya",
     "expected_chunk_ids": ["ch2_p134_s9_c0","ch2_p170_s0_c0","ch2_p170_s1_c0","ch2_p180_s0_c0","ch2_p180_s1_c0","ch2_p180_s4_c0","ch2_p180_s5_c0","ch2_p180_s7_c0","ch2_p183_s3_c0","ch2_p317_s0_c0","ch2_p317_s1_c0","ch2_p319_s0_c0","ch2_p566_s19_c0","ch2_p567_s0_c0"],
     "type": "lexical",
-    "notes": "Companion to q02: the same scene reached by the exact term instead of a paraphrase. 'catleya' (Proust's spelling) occurs in 16 chunks, so it is rare enough to trigger lemma search. Multi-answer: single-lemma matches tie, and tie order is random (see MRR note), so any catleya chunk counts."
+    "notes": "Companion to q02: the same scene reached by the exact term instead of a paraphrase. 'catleya' (Proust's spelling) occurs 16 times, so it is rare enough to trigger lemma search. Multi-answer: single-lemma matches tie, and tie order is random (see MRR note), so any catleya chunk counts."
   }
 ]

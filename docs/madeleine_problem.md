@@ -108,7 +108,7 @@ The embedding model (multilingual MiniLM) represents a whole sentence as one vec
 This showed that pure vector search can miss exact keyword matches, so I added a second, exact-term layer alongside the semantic one:
 
 1. **A lemma index**, built in `proust-pipeline` with spaCy (`fr_core_news_lg`): for each noun and proper noun in the text, its dictionary form (lemma) maps to the chunks it appears in. "madeleines" and "madeleine" both map to `madeleine`.
-2. **Routing by rarity** (`classify_intent`): if a query contains a noun or name that appears in 50 chunks or fewer, lemma search runs in addition to semantic search. Very common words ("Swann", "Françoise") are skipped, since an exact match on them isn't informative.
+2. **Routing by rarity** (`classify_intent`): if a query contains a noun or name that appears 50 times or fewer, lemma search runs in addition to semantic search. Very common words ("Swann", "Françoise") are skipped, since an exact match on them isn't informative.
 3. **Merging** (`merge_results`): results from both searches are combined into one list, without duplicates, before being sent to Claude.
 
 ## Result
