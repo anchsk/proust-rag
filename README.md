@@ -59,7 +59,7 @@ Once passages are found, they're assembled into a prompt and sent to Claude (Ant
 
 - **FastAPI** — web framework, serves `/search` and `/chat`
 - **ChromaDB** — vector database for semantic search
-- **sentence-transformers** (`paraphrase-multilingual-MiniLM-L12-v2`) — embedding model; multilingual, so queries aren't restricted to French
+- **sentence-transformers** (`paraphrase-multilingual-MiniLM-L12-v2`) — multilingual embedding model, so questions in other languages can match the French text by meaning (tested with English, Italian and Russian). Exact-term search uses a French model, so it only helps with French words and names. Short queries may be answered in the wrong language (see [finding_language_detection_short_queries.md](docs/finding_language_detection_short_queries.md)).
 - **spaCy** (`fr_core_news_lg`) — French lemma extraction for exact-term search
 - **Anthropic API** (`claude-haiku-4-5-20251001`) — answer generation
 - **Docker** — containerized deployment
