@@ -104,7 +104,7 @@
   {
     "id": "q14",
     "query": "What does the narrator say about the painter Vermeer?",
-    "expected_chunk_ids": ["ch2_p533_s2_c0", "ch2_p33_s2_c0", "ch2_p33_s7_0"],
+    "expected_chunk_ids": ["ch2_p533_s2_c0", "ch2_p33_s2_c0", "ch2_p33_s7_c0"],
     "type": "semantic",
     "notes": "Formerly a negative control, but Vermeer does appear, spelled 'Ver Meer' (ch.2). Semantic search ranks a Ver Meer chunk at 10 (k=20), only because it contains 'peintre': the name adds nothing to the embedding, so it competes with every other 'painter' sentence. Lemma search can't help (no lemma 'vermeer'). Querying 'Ver Meer' works via lemma search in /chat. Possible fix: alias map for historical name spellings."
   },
